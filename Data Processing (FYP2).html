@@ -15038,17 +15038,61 @@ div#notebook {
 </div>
 </div>
 </div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><font size="30">1.0 Prepare data</font></p>
+
+</div>
+</div>
+</div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[1]:</div>
+<div class="prompt input_prompt">In&nbsp;[134]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">nltk</span>
-<span class="kn">from</span> <span class="nn">nltk.corpus</span> <span class="k">import</span> <span class="n">stopwords</span>
-<span class="kn">from</span> <span class="nn">sklearn.feature_extraction.text</span> <span class="k">import</span> <span class="n">TfidfVectorizer</span>
-<span class="kn">from</span> <span class="nn">sklearn.decomposition</span> <span class="k">import</span> <span class="n">TruncatedSVD</span>
-<span class="kn">from</span> <span class="nn">sklearn.cluster</span> <span class="k">import</span> <span class="n">KMeans</span>
-<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="k">import</span> <span class="n">adjusted_rand_score</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">pymongo</span> <span class="k">import</span> <span class="n">MongoClient</span>
+
+<span class="k">try</span><span class="p">:</span> 
+    <span class="n">client</span> <span class="o">=</span> <span class="n">MongoClient</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Connected successfully!!!&quot;</span><span class="p">)</span> 
+<span class="k">except</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Could not connect to MongoDB&quot;</span><span class="p">)</span> 
+
+<span class="n">db</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">job_advert_db</span> <span class="c1">#select database</span>
+<span class="n">collection</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">job_advert</span> <span class="c1">#select collection to insert</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Connected successfully!!!
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[135]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span> <span class="kn">from</span> <span class="nn">bson.json_util</span> <span class="k">import</span> <span class="n">dumps</span>
 </pre></div>
 
 </div>
@@ -15058,18 +15102,76 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="prompt input_prompt">In&nbsp;[136]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">textFile</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;D:\SE_1502538_FYP2\Job Advert Data Collection\data_2019-03-01.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;r+&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
-<span class="n">text_data</span> <span class="o">=</span> <span class="n">textFile</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
-<span class="n">textFile</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">job_advert_collection</span> <span class="o">=</span> <span class="n">collection</span><span class="o">.</span><span class="n">find</span><span class="p">({})</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Amount of data collected:&quot;</span> <span class="p">,</span> <span class="n">job_advert_collection</span><span class="o">.</span><span class="n">count</span><span class="p">())</span>
 
-<span class="n">split_text_data</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">job_adverts</span> <span class="o">=</span> <span class="p">[]</span>
 
-<span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">text_data</span><span class="o">.</span><span class="n">split</span><span class="p">():</span>
-    <span class="n">split_text_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">word</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">split_text_data</span><span class="p">[:</span><span class="mi">5</span><span class="p">])</span>
+<span class="k">for</span> <span class="n">ja</span> <span class="ow">in</span> <span class="n">job_advert_collection</span><span class="p">:</span>
+    <span class="n">job_adverts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ja</span><span class="p">[</span><span class="s1">&#39;desc&#39;</span><span class="p">])</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Amount of data collected: 4827
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>C:\Users\uSER\Anaconda3\lib\site-packages\ipykernel_launcher.py:2: DeprecationWarning: count is deprecated. Use Collection.count_documents instead.
+  
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><font size="30">2.0 Data Preprocessing</font></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[137]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">re</span><span class="o">,</span> <span class="nn">string</span><span class="o">,</span> <span class="nn">unicodedata</span>
+<span class="kn">import</span> <span class="nn">nltk</span>
+<span class="kn">import</span> <span class="nn">contractions</span> <span class="c1">#expand the contractions &quot;you&#39;re -&gt; you are&quot;</span>
+<span class="kn">import</span> <span class="nn">inflect</span> <span class="c1">#convert plural to singular nouns</span>
+<span class="kn">from</span> <span class="nn">bs4</span> <span class="k">import</span> <span class="n">BeautifulSoup</span>
+<span class="kn">from</span> <span class="nn">nltk</span> <span class="k">import</span> <span class="n">word_tokenize</span><span class="p">,</span> <span class="n">sent_tokenize</span> 
+<span class="kn">from</span> <span class="nn">nltk.corpus</span> <span class="k">import</span> <span class="n">stopwords</span> <span class="c1">#filter english words &quot;is&quot;, &quot;this&quot;, &quot;there&quot;, etc.</span>
+<span class="kn">from</span> <span class="nn">nltk.stem</span> <span class="k">import</span> <span class="n">LancasterStemmer</span><span class="p">,</span> <span class="n">WordNetLemmatizer</span>
+<span class="kn">import</span> <span class="nn">tqdm</span>
 </pre></div>
 
 </div>
@@ -15079,28 +15181,387 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[1]:</div>
+<div class="prompt input_prompt">In&nbsp;[144]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.feature_extraction.text</span> <span class="k">import</span> <span class="n">CountVectorizer</span><span class="p">,</span> <span class="n">TfidfTransformer</span>
-<span class="c1"># our corpus</span>
-<span class="n">data</span> <span class="o">=</span> <span class="n">split_text_data</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">nltk</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="s1">&#39;punkt&#39;</span><span class="p">)</span>
+</pre></div>
 
-<span class="n">cv</span> <span class="o">=</span> <span class="n">CountVectorizer</span><span class="p">()</span>
+</div>
+</div>
+</div>
 
-<span class="c1"># convert text data into term-frequency matrix</span>
-<span class="n">data</span> <span class="o">=</span> <span class="n">cv</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<div class="output_wrapper">
+<div class="output">
 
-<span class="n">tfidf_transformer</span> <span class="o">=</span> <span class="n">TfidfTransformer</span><span class="p">()</span>
 
-<span class="c1"># convert term-frequency matrix into tf-idf</span>
-<span class="n">tfidf_matrix</span> <span class="o">=</span> <span class="n">tfidf_transformer</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<div class="output_area">
 
-<span class="c1"># create dictionary to find a tfidf word each word</span>
-<span class="n">word2tfidf</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">cv</span><span class="o">.</span><span class="n">get_feature_names</span><span class="p">(),</span> <span class="n">tfidf_transformer</span><span class="o">.</span><span class="n">idf_</span><span class="p">))</span>
+<div class="prompt"></div>
 
-<span class="k">for</span> <span class="n">word</span><span class="p">,</span> <span class="n">score</span> <span class="ow">in</span> <span class="n">word2tfidf</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">word</span><span class="p">,</span> <span class="n">score</span><span class="p">)</span>
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>[nltk_data] Downloading package punkt to
+[nltk_data]     C:\Users\uSER\AppData\Roaming\nltk_data...
+[nltk_data]   Unzipping tokenizers\punkt.zip.
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+<div class="prompt output_prompt">Out[144]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>True</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>2.1 Denoise Job Descriptions</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[138]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">strip_html</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+    <span class="n">soup</span> <span class="o">=</span> <span class="n">BeautifulSoup</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="s2">&quot;html.parser&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">soup</span><span class="o">.</span><span class="n">get_text</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">remove_between_square_brackets</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s1">&#39;\[[^]]*\]&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">denoise_text</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+    <span class="n">processed_text</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">pbar</span> <span class="o">=</span> <span class="n">tqdm</span><span class="o">.</span><span class="n">tqdm</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">text</span><span class="p">:</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">strip_html</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">remove_between_square_brackets</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+        <span class="n">processed_text</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+        <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">pbar</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">processed_text</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[139]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">job_adverts</span> <span class="o">=</span> <span class="n">denoise_text</span><span class="p">(</span><span class="n">job_adverts</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>2.2 Replace contractions in string</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[140]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">replace_contractions</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Replace contractions in string of text&quot;&quot;&quot;</span>
+    <span class="n">text_arr</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">pbar</span> <span class="o">=</span> <span class="n">tqdm</span><span class="o">.</span><span class="n">tqdm</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">text</span><span class="p">:</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">contractions</span><span class="o">.</span><span class="n">fix</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+        <span class="n">text_arr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+        <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">pbar</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">text_arr</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[142]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">job_adverts</span> <span class="o">=</span> <span class="n">replace_contractions</span><span class="p">(</span><span class="n">job_adverts</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>[&#39;Leading Local EnterpriseUnderstand current processes and valuable outcomesAble to structure a large amount of information within a process frameworkJob scopeMapping/Reviewing existing business processes and “re-imagine” improved ones by maximizing customer value while minimizing waste and incorporating automation.Facilitate/lead process workshops that involve eliciting process requirements and liaising with usersAbility to interpret business requirements into digital solution.Create project plans that contain project goals, milestones, and resourcesMonitor, measure and provide feedback on process performanceLiaise with management to coordinate process improvement project activitiesRequirements:Enjoys variety at work as this is a wide-ranging role immersing in a variety of different projects, and able see the big picture.Work with other business teams and Digital Department to figure out the best way to design new processes and solve process-related problems.Strong analytical background, be a problem solver and have good diagramming and communication skillsKnowledge of process mapping and business process reengineering.Performed analysis of business processes and workflows with the objective of finding out how they can be improved or automated.Knowledge in business process modeling notations (BPMN, EPC, etc) and Business Process tools (ARIS).Interested candidates who wish to apply for the advertised position, please email us at\xa0 an updated copy of your resume in Ms word format.\xa0We regret that only shortlisted candidates will be notified.EA Licence No 18C9228 Registration No. R1770238 (Jimmy Low)&#39;, &#39;Leading Local EnterpriseStrong knowledge in enterprise IT hardware and softwareMicrosoft Certified Systems Engineer (MCSE), ITIL V3 will advantageResponsibilitiesProvide IT support to end user included enterprises hardware and softwareProvide IT administration &amp; service desk support for internal customer.Provide solution to end user requests / problems via multiple channel (phone, email, remote service, IT Service Management System etc.)Supporting teleconference, audio/visual infrastructure and services.Participate in projects when required.RequirementExcellent technical knowledge and skills of Windows OS.Deep understanding of IT hardware and software (Microsoft Office Suite, Visio, etc.)Experience administering Active Directory domain, Group Policy, Microsoft Office 365.Knowledge in enterprise software installation, networking system troubleshooting, security patching, etc.Experienced in support the following application is a plusMobile Device ManagementMicrosoft System Centre Configuration ManagerMicrosoft Lync/SkypeMicrosoft BitLockerMicrosoft Certified Systems Engineer (MCSE), ITIL V3 will be a plusInterested candidates who wish to apply for the advertised position, please email us at\xa0\xa0an updated copy of your resume in Ms word format.\xa0We regret that only shortlisted candidates will be notified.\xa0EA Licence No 18C9228 Registration No. R1770238 (Jimmy Low)&#39;, &#39;Leading Local EnterpriseStrong knowledge of AI/ML/Mathematical modelsStrong in Python, R, C++Exposure to High-Performance Computing &amp; Natural Language ProcessingResponsibilitiesAnalyzing global energy markets to identify significant patterns and understanding and forecast trendsStrong understanding of AI/ML/ Statistical &amp; mathematical modelsEnsure the developed models are of the highest standards of qualityResearch and develop AI/ML/ Statistical &amp; mathematical models which are better suited for the energy market analysis, energy trading and related areasWork with different individuals from various M&amp;are team across a wide range of regionsCollecting, analyzing, screening and manipulating different data sets required for analysis and build a M&amp;are data lake to support all decision making processWork with Cloud based Big Data platforms and tools to design and deploy applications in collaboration with a global IT teamConduct testing / validation of Machine Learning models, model tuning and parameter optimizationRequirementPhD, Master’s degree in Computer Science, Engineering, Statistics or other related fieldsMore than 5 years of experience in machine learning solutions developmentExperienced in applying analytics/ML modeling for energy/utilities market analysis / trading applicationsStrong skills in Python/R/C++ or any other related programming languagesDeep understanding of AI/ML/Mathematical models with hands-on capability of building models and solutions for the end userExperienced in scalable solutions using R/Python/Scala/Spark/Hadoop on batch &amp; real-time data and deploying on Cloud platforms using different PAAS servicesExperienced in identifying, accessing and data handling various data sources using a wide variety of tools (API/SQL/Web Scrapping, etc.)Exposure to High-Performance Computing and/or Natural Language Processing is a plusDemonstrable experience in delivering end-to-end data science projects collaborating directly with both technical and business stakeholdersInterested candidates who wish to apply for the advertised position, please email us at\xa0 an updated copy of your resume in Ms word format.\xa0We regret that only shortlisted candidates will be notified.\xa0EA Licence No 18C9228 Registration No. R1770238 (Jimmy Low)&#39;, &#39;Leading Local EnterpriseHands-on experience in Hadoop, SparkFamiliar with ML techniques, AI based modelHands-on experience working with cloud based big data platformsResponsibilitiesBuild solutions which generate unique insights &amp; knowledge to the core business users within energy and utilities operationsExhibit deep knowledge in advanced analytics, including knowing how to transform complex data into easily understandable action items within a business contextDeep understanding of ML techniques, time-series/AI based forecasting, feature engineering, dimensionality reduction, optimization and deep learning techniquesWork closely with business stakeholders in automating and building appropriate process visualizations for operational supportCollect, analyse, screen and manipulate different exogenous/ related data sets and tags required for modelling and support all decision making processWork with Cloud based Big Data platforms and tools to design and deploy applications in collaboration with a global IT teamConduct testing / validation of Machine Learning models, model tuning and parameter optimizationExhibit interpersonal /communication skills to communicate effectively in a multifunctional leadership teamRequirementPhD, Master’s degree in Computer Science or Engineering Statistics or other related fields.Minimum 5 years of experience as Data Scientist with proven record of building ML models applied to asset management topics, within the energy/utility or a related industry, and embedding these solutions into business processesDemonstrate effective knowledge of industrial asset management principles such as predictive maintenance, asset failure modes and apply these principles directly to build statistical/ML modelsExperienced in implementing scalable ML solutions by Python or are on cloud platforms with different PAAS servicesProficient in advanced statistical methods and building ML models including Regression, classification, forecasting, function approximation, optimization and deep learning having a strong understanding of mathematical background of various modelling approachesHands-on experience working with cloud based big data platforms and tools such as Hadoop and Spark to deploy and productionize ML solutionsDemonstrable experience in delivering end-to-end data science projects collaborating directly with both technical and business stakeholdersExperience in formalizing business problems as machine learning solutions and translating into actionable insights and foresightsInterested candidates who wish to apply for the advertised position, please email us at\xa0 an updated copy of your resume in Ms word format.\xa0We regret that only shortlisted candidates will be notified.\xa0EA Licence No 18C9228 Registration No. R1770238 (Jimmy Low)&#39;, &#39;Leading Local EnterpriseCloud based Big Data PlatformSolving large-scale complex problemsExperience in optimization algorithms development and softwareResponsibilitiesIdentifying business-wide problems and be responsible for guiding the project team in solving problemsManaging of multiple concurrent projects and drive them to successful completionCommunicate problem formulation, solution, analyses and insights to team members and stakeholdersBuild, validate, test, and deploy models and algorithms using proven and experimental techniquesDefine hypotheses, develop and execute necessary tests, experiments, and analyses to prove or disprove themWork with Cloud based Big Data platforms and tools to design and deploy applications in collaboration with a global IT teamApply state-of-the-art techniques in optimization algorithms such as ILP, MILP, Heuristics/Meta-heuristics(SA,GA,PSO), and tools such as Cplex, Gurobi, MATLAB to build robust business solutionsRequirementPh.D. or at least an MSc in Mathematics, Operations Research, Computer Science will be advantageMinimum 5 years of relevant experience in solving large-scale complex problemsExperienced in implementing scalable software systems and knowledge of the principles of fault-tolerance, reliability and durabilityDetail-oriented and efficient time manager who thrives in a dynamic and fast-paced working environmentAble to present complex subjects clearly and coherently to non-domain expertsGood knowledge with exact and heuristic methods in optimization and hybridizing them for good quality solutions and computing performanceExperience with formulating and solving problems in an optimization frameworkExperience with standard types of optimization problems (linear programming, convex optimization, integer programming, discrete, nonlinear, or stochastic mathematical optimization, etc.)Experience in optimization algorithms development (e.g. supply chain optimization, operations research, network design, machine learning, etc.)Experience in optimization software such as GAMS, and optimization modelling language (e.g. AMPL,AIMMS, OPL, etc.)Familiarity with experimental design and causal inferenceInterested candidates who wish to apply for the advertised position, please email us at\xa0 an updated copy of your resume in Ms word format.\xa0We regret that only shortlisted candidates will be notified.\xa0EA Licence No 18C9228 Registration No. R1770238 (Jimmy Low)&#39;, &#39;Leading Local MNCStrong knowledge and experience in Cloud technologiesDepth technical skills in large enterprise Cloud infrastructureResponsibilitiesDeveloping strategies and technology landscape for Cloud suitability, developing business case and Cloud adoption roadmap.Cloud adoption driving at enterprise level. Defining the roadmap for cloud transformation at portfolio level.Identify and define processes suitable for cloud adoption across portfolios within the organization and measure the performance of the processes on periodically.Improvement in existing infrastructure operations, architecture design as well as delivery processes, overall infrastructure, cloud, &amp; network architectureDefining deployment standards for development team &amp; reviewing delivered build packages for validating the required standards.Work together with other IT sub-function heads to deep understand user requirements across the IT services and recommend new technologies to meet the business needs. Improving the efficiency by reviewing the delivery or current services and assess ways.Supervise infrastructure deployment and conduct post release reviews and provide in-depth technical advice &amp; level 3 support to resolve complicated technical issues to maintain service availability and improve service levels.Conduct market research and deep understand of industry latest trends and define newer solutions to institutionalize Cloud practices at enterprise level.Design, setup and maintain Cloud Management Platform, orchestration tools, Infrastructure Monitoring Tools for proactive monitoring of IT Infrastructure and application performance to ensure optimal IT Services delivery.Advising on new technologies to improve service quality, cost saving based on understanding the requirements from business stakeholder. Advise on capabilities and constraints of the infrastructure environment and communicate about implementation and expansions of infrastructure strategy, architecture, and delivery processes.Ensure SLA always meet the business requirement. Ensure good security posture of computer resources. Manage on IT expenses to ensure within budgets.Develop the IT manuals, operational SOPs, technical architecture documentations and etc.Ensure high availability of IT service &amp; network infrastructure in line with the stipulated service level agreements (SLAs). Manage recovery process and prepare incident reports in cases of system outages.Support and remote overseasoffice IT infrastructure setup.In charge of cloud and infrastructure related projects.Provide monthly and yearly reports on IT Service SLA achievements, IT systems, networking and cloud capacity, trending, cost utilization, planning to Senior Executive ManagementRequirementDegree in Computer Science/Information Technology or equivalent with at least 4-year experience in Architecture solution leveraging Azure IaaS services, DevSecOps, ASR with 10+ years of experience of hard-core infrastructure consulting, design, setup, and operations.MUST Azure Certification:Architecting Microsoft Azure Solutions/DevOps Engineering Professional/DeveloperMinimum 3 years hands-on experience on multiple domains of Cloud based technologiesPaaS, IaaS, Cloud Infrastructure, Cloud based development, Docker, Kubernetes, Python, Pivotal Cloud FoundryDeep understanding of Cloud Services (AWS, Google Compute Engine, Private/Hybrid CloudsStrong knowledge and a large experience on a broad range of infrastructure technologies such as Public &amp; Hybrid Clouds platforms (Azure, Office 365, AWS, etc.) Networking, Windows/Susie/Red Hat Server platforms, Windows Desktop platforms, Directory Services, High Availability configurations, Virtualization (VMware, Hyper-V, Citrix), storage technologies, cloud services, collaboration tools and trends.In depth knowledge of key Azure services -VM, Storage, Azure SQL, VNet, Redis Cache, Resource Manager, Azure Diagnostics/ OMS, Traffic Manager, Azure CDN, Azure Notification Hubs, Azure Identity and Access Management, Azure Data Lake / Data Factory, Infrastructure as Code, Azure IaaS – Microsoft and Linux based VMs, databases, storage, Azure Virtual networks, firewalls, resource groups, Azure Application Insights, Microsoft VSTS DevOps platform, Microsoft Cloud security architecture, and etc.Key Skills: CI (Continuous Integration) and CD (Continuous Deployment/Delivery) using Jenkins, Ansible, Kubernetes, Python, GitHub, she will scripting, Change management, Azure Cloud knowledge and prod support activities.Deep experience in platform integration/architecture technical skillsSOA, API-centric, microservices, containerization, serverless, managed file transfer, messaging protocols, etc.Experience on handling of servers (IIS, Tomcat, Apache).Strong knowledge of leading Cloud Management Platform and orchestration tools.Strong knowledge of evaluating the Azure hosting consumption charges and optimization of the charges.Knowledge inMicrosoft Windows, Linux based Operating Systems, Open Source, VMware &amp; Hyper-V hypervisors &amp; WhatsUp Gold.Understanding of TOGAF or other formal architecture frameworks is desired.Interested candidates who wish to apply for the advertised position, please email us at\xa0 an updated copy of your resume in Ms word format.\xa0We regret that only shortlisted candidates will be notified.\xa0EA Licence No 18C9228 Registration No. R1770238 (Jimmy Low)&#39;, &#39;One of the Leading Local EnterpriseLead a team, overseas travel requiredDepth technical skills in large enterprise network &amp; operational network designResponsibilitiesDeveloping strategies and technology landscape for global network (data, video &amp; voice, IoT) suitability develop business case and networking infrastructure adoption roadmap.Networking infrastructure driving at enterprise level. Defining roadmap for voice &amp; video services, networking.Define solutions with cloud as an enablerIdentifying and define processes suitable for cloud adoption across portfolios within the organization and measure the performance of the processes on periodically.Improvement in existing infrastructure operations, architecture design as well as delivery processes, overall infrastructure, cloud &amp; networking architectureDefining deployment standards for development team &amp; reviewing delivered build packages for validating the required standards.Work together with other IT sub-function heads to deep understand user requirements across the IT services and recommend new technologies to meet the business needs. Improving the efficiency by reviewing the delivery of current services and assess ways.Supervise infrastructure deployment and conduct post release reviews and provide in-depth technical advice &amp; level 3 support to resolve complicated technical issues to maintain service availability and improve service levels.Research the industry latest trends and define a newer solutions to institutionalize video &amp; voice, networking practices at enterprise level.Design, setup and maintain Infrastructure Management Platform, orchestration tools, Infrastructure Monitoring Tools for proactive monitoring of IT Infrastructure and application performance to ensure optimal IT Services delivery.Understand the requirements from business stakeholder and advise new technologies for service quality improvement, and cost savings. Advise on capabilities and constraints of the infrastructure environment and communicate about implementation and expansions of infrastructure strategy, architecture, and delivery processes;Ensure that SLA and uptime meet business requirement. Ensure good security posture of computer resources. Manage on IT expenses to ensure within budgets.Operations staffing: recruitment, supervise, schedule, develop the team, set clear direction and objectiveDevelop the IT manuals, technical architecture documentations, operation SOPs and etc.Ensure service level agreements (SLAs) are met by manage support to meet business need.Support and remote overseas office IT infrastructure setupIn charge of company cloud and infrastructure related projectsProvide monthly and yearly reports on IT Service SLA achievements, IT systems, networking and cloud capacity management, planning, cost utilization, trending to Senior Executive ManagementRequirementDegree in Computer Science/Information Technology or equivalent with minimum 3-year experience in Network Architecture solution for data, video &amp; voice, cloud and IoT with 10+ years of experience of hard-core infrastructure consulting, design, setup, and operations.3-5 years of experience in leading a team of engineers on providing global infrastructure supportCisco CCIE/CCIE-SP, Aruba, PMP/PRINCE2, ITIL V3, AWS Certified Solutions Architect, Azure Solutions Architect will be a PLUSDeep understanding on Cloud services (AWS, Google Compute Engine, Private/Hybrid Clouds)Knowledge to provide customer satisfactionStrong knowledge and a large experience on a broad range of infrastructure technologies such as Public &amp; Hybrid Clouds platforms (Azure, Office 365, AWS, etc.) Networking, Windows/Susie/Red Hat Server platforms, Windows Desktop platforms, Directory Services, High Availability configurations, Virtualization (VMware, Hyper-V, Citrix), storage technologies, cloud services, collaboration tools and trends.Deep experience in enterprise architecture design, managing and support the following applications/systems –Cisco &amp; Aruba networking &amp; WiFi solutions, 802.1x, 802.1q, NAC/NAP technologies, MPLS/IPSec/SDN/SD-WAN/Internet, Hybrid Cloud Networking Computing Platforms &amp; Technologies (Office365, Azure, AWS,etc) and AAA technologies (TACACS+ and RADIUS), Video &amp; Audio conferencing services (BlueJeans, Zoom, etc.), Virtual PBX systems, and etc.Good knowledge in Microsoft Windows, Linux based Operating Systems, Open Source, VMware &amp; Hyper-V hypervisors &amp; WhatsUp Gold will be advantage.Understanding of TOGAF or other formal architecture frameworks is desired.Interested candidates who wish to apply for the advertised position, please email us at\xa0 an updated copy of your resume in Ms word format.\xa0We regret that only shortlisted candidates will be notified.\xa0EA Licence No 18C9228 Registration No. R1770238 (Jimmy Low)&#39;, &#39;MNCAttractive remunerationsVibrant working environmentResponsibilitiesOversee the development of game production from concept to live online operations (end to end)Manage diverse team of artists, game designers, programmers and external vendorsCollect estimates from design, art, programming, and QA leads to generate project schedules and set release datesRun daily meetings to ensure all tasks are on trackCollaborate with team leads to ensure that all deadlines are being met and alleviating dependencies that block developmentReview schedules with management and team leads, defining what is expected in each milestone/sprintProvide regular reports on the game’s performance and make recommendations &amp; adjustmentsAnalyze data metrics and recommend improvements to the product in order to improve the revenue model, marketing, new user acquisition, and existing user retentionRequirementsMinimum Degree/Diploma in a related field with at least\xa08 years of relevant experience, with 2 published titlesPossess great communication and presentation skillsPossess the leadership skills to lead a team of 12 or more staffHave a strong interest in social gamesProven ability to identify, understand, prioritize, plan and articulate market &amp; customer requirementsStrong analytic skills and experience with metrics driven decision makingA passionate, performance-driven individual with a strong business acumenReliability, ability to work under tight deadlines\xa0Interested candidates please send an updated CV in Ms Word format to  or call Patricia Ng (Reg no: R1331229) @ 63260106 for a confidential discussion&#39;, &#39;Responsibilities:- To provide 1st level of support via hotline calls and emails with SLA.- To log all customer requests into internal ticketing system.- To monitor Linux &amp; Windows system on AWS and Azure cloud.- To provide efficient and timely technical support to end-user.- To escalate any unresolved issue to 2nd and 3rd level engineers for further resolution.- To follow up on the progress of all outstanding issues until closure.- To perform other IT related duties when assigned by the management.\xa0\xa0Requirements:- NiTEC / Diploma in IT with at least 2 years of relevant experience- Familiar with Windows OS- Possess the strong sense of responsibility, initiative and commitment to customer service- Meticulous and a team player with pro-active and good attitude- Experience in Linux /cloud computing will be an advantage.&#39;, &#39;Location\xa0\xa0\xa0\xa0\xa0\xa0\xa0 :CentralWorking days\xa0\xa0\xa0 : 5 day work weekSalary\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0 : Up to $15,000 (salary will commensurate according to experience &amp; qualifications)The Company strives to achieve employee satisfaction by providing attractive staff benefits, welfare &amp; training programmes to all staff.\xa0Our client, a global brand in Mobile Internet and Video Technology, is inviting dynamic individuals to join their team.\xa0Responsibilities:Research and development in computer graphics and video contents editingLook into new video editing/processing algorithms for our short video and live streaming pipelineFollow up the development works in related fields and keep improving overall performance of the platformPerform algorithm optimisationReview video coding as and when neededRequirements:Minimum Masters in Video related/Computer Graphics/Computer Vision or equivalentPhD candidate is highly sought afterSolid knowledge/experience in image/video processing algorithmMachine Learning tech application in video editing and graphics processing is a big plusFamiliar with frameworks such as MXnNet, Tensorflow etc. is a big bonusTeam player and positive working attitudeAbility to work independently, organise and meticulousRemuneration will be accorded based on relevant work experience and technical skillsetsMust have good command of Chinese language to work with China HQ and clientsHow to Apply:If you are organised, meticulous, adapt well to changes and more importantly, believe that YOU CAN MAKE A DIFFERENCE, we would like to hear from you.Simply submit your application by emailing your updated résumé (in MS Word format) to Wills Heng Wei He (EA Personnel Registration No: R1549842) at\xa0\xa0Click the &#34;Apply Now&#34; button at the bottom of the page orCall your friendly Consultant, Wills Heng Wei He, at 6590 9874 for a confidential discussion. I will be glad to assist you!FOR IMMEDIATE CONSIDERATION:\xa0\xa0\xa0\xa0Please indicate the below information in your resume:Current &amp; Expected salaryReason(s) for leaving\xa0\xa0\xa0\xa0Availability to commence workWe regret only short listed candidate will be notified. All applications will be treated with the strictest confidence.By submitting any application or résumé to us, you will be deemed to have agreed and consented to us collecting, using, retaining and disclosing your personal information to prospective employers for their consideration.&#39;, &#39;• Great exposure teaching under MOE Schools• Coach and teaching primary school childrens• Possess strong passion in teaching\xa0Location: Multiple location, islandwideWorking hours:\xa0Office hours (Depend on School operating hours)Salary: up to $2500 + Bonuses + Benefits\xa0Job Scope:To develop and conduct IT based customized training to students and institution staff based on institution requirement.To provide software and partial technical assistance, including Learning Management System (LMS) to students and institution staff.To assist and update institution website and intranet.To support institution Head of IT Department in spearheading IT initiatives.To support any other adhoc tasks as required by institution HOD IT and/or school management.To submit monthly performance report to institution and company.Requirements:At least a Diploma in Multimedia/Information Technology/Computer Studies, and or any related field.At least one-year experience in teaching/training.Possess basic photography/videography skills.Possess basic coding skills.Proficient in Microsoft Office and Adobe suites.How to apply:Send your updated resume to &#34;&#34; or Click &#34;apply now&#34;.Subject stated: IT Software Trainer\xa0*By submitting any application or resume to us, you will be deemed to have agreed &amp; consented to us collecting, using, retaining &amp; disclosing your personal information to prospective employers for their consideration*\xa0Tan Guo Wei (Isaac) | R1655144ScienTec Consulting Pte Ltd (ScienTec Personnel) | EA 11C5781&#39;, &#39;IT Risk Management / Software Security Integrated Solution Provider\xa0Job Description\xa0Developing software solutions according to requirements and designPerform software application maintenance, development, testing &amp; debugging assignmentsConducting unit test, integration test, system test, etc to ensure that project/product requirements are metProduce project/product related documentationProvides system support to customer (troubleshooting and problem resolution) upon escalated by L2 support teamDevelop and maintain an in-depth working knowledge of all products and services offered by the CompanyWorking closely with colleagues to provide solution in the event of critical software issueLeadership skills is required for senior roleAble to provide software solution guidance to the team for senior roleTravelling is requiredRequirements:\xa0Candidate must possess at least Diploma or Bachelors Degree in Software Engineering or equivalent.Mandatory skill(s): 2-5 years working experience in JAVA and J2EERequired skill(s): Java, C/C++, Visual C++, .NET, PL/SQL.Preferred skill(s): she will Scripting (Linux, Unix), Oracle, MySQL, Crystal Reports, Web Services, Perl, Microsoft Technologies (MFC, WCF, WPF, CSLA.NET, MSMQ, Prism and etc), Hibernate, Oracle/MySQL DB Administration.Willing to take up challenge of engineering the unknown.5 working days / Week job.\xa01 Full time position is available.&#39;, &#39;Job DescriptionAdminister, support and monitor whole VMware landscapeTroubleshoot and fix issues in a timely and efficient mannerCoordination of hardware repair and maintenanceMaintain the list of VMware inventoryPerform industry standard server implementation, upgrades and troubleshootingPerform Virtualization projects on hyper converge infrastructurePerform AD/Messaging Solution and Microsoft CloudSetup of new Clusters, vCenters and other requirementsRequirementDegree in Computer Science or equivalent experienceMinimum 5 years of working experience in windows based environmentMinimum 2-4 years of working experience in large VMware environmentsIndustry recognized certification in server/storage management will be advantageousFlexible, self-motivated and able to work independently in a fast paced and multi-cultural organizationExcellent verbal and written communication skills, with a strong command of the English languageGood interpersonal skills and strong analytical skillsSelf-confident and able to take initiative in problem solving independentlyAble to work under pressure, critical situation and flexible working hour environmentAble to Design, Plan, Deploy, support and upgrade/migrate of MS Active Directory, MS Exchange Messaging Solution, MS Clusters, MS Hyper-V, Systems Center Suite and Cloud SolutionRequired Skill Sets:MS Active Directory, MS Exchange, Messaging solution, MS Cluster, MS Hyper-V.VMware vSphere, vCentre, VRealize, Horizon view and cloud solutionCandidates will be required to travel overseas for project implementation as and when requiredDesirable certifications: Microsoft MCSE certificates, VMWare VCP\\VSP/VTSP certifications, Cisco UCS Certification (DCUCI)Please send your detailed resume in MS Word format including the following details to 1.Recent photograph2.Personal particulars3.Education Level4.Each employment background5.Working experience6.Reason for leaving each employment7.Last drawn salary8.Expected salary9.Date of availability&#39;, &#39;☑ Mon – Fri (8.30am – 5.30pm)☑ West☑ UP $8000 + AWS + Variable Bonus☑ Electronics Industry\xa0Responsibilities:Lead and implementation of short term Logistics information systems project (6–12 months)Oversees project progress and supervise a team of IT analystDevelop test plan and execute validation prior to releasing of new developmentPreparing of blueprints, providing application and 1st level technical support to end user regarding SAP functionsPerform testing and validation to ensure smooth delivery and implementation planEvaluate business flow and provide solutions to entities on improving system processes and work proceduresResponsible for new systems updates and upgrading\xa0Requirements:Min. Diploma / Degree in Computer Science / Information Systems or equivalentMin. 5 – 8 years of relevant business / systems analyst experienceSound knowledge in SAP (MM, CSM, WM, PP, PM) with experience in upgrading and implementationWilling to travel overseas if required\xa0Qualified or Interested candidates, please email your updated resume in MS format to: \xa0\xa0\xa0We regret to inform that only shortlisted candidates would be notified.\xa0Tua Yee Nee, ElaineSenior Consultant (Reg. No: R1657371)JTE Recruit Pte Ltd (EA License: 14C7215)&#39;, &#39;Job Requirements:Our client is looking for a Systems Engineer with a demonstrated ability to drive a project to completion with good time management skills. You must be highly self-motivated, an independent thinker, organized and detail-oriented, with the ability to prioritize and execute tasks in a high-pressure environment.Proven experience in overseeing the design, development, and implementation of VMware technologies and\xa0 equipment in a Microsoft Windows environment to the specifications of client proposalsTroubleshoot and resolve Server and Storage related issues when contacted by clients by providing both on-site and remote supportFamiliar with Server, storage and backup solutionsManaging assigned projects and program components to deliver services in accordance with established objectivesQualifications:Degree or Diploma in Electronic Engineering / Computer scienceMinimum of 3 to 4 years working experienceMicrosoft and VMware certificationExperience with SAN hardware, specifically EMC, or NetappsVMware and Hyper-V ExperienceHOW TO APPLY:\xa0Interested applicants, kindly send your resume in MS Word format to  or please click on “Apply Now” to submit your resume and providing the below details in your resume.\xa0We regret only shortlisted candidates will be notified.\xa0Stafflink Services Pte LtdEA License No.: 04C4294EA Personnel: Steven Tan Eng FooEA Personnel Reg. No.: R1873987&#39;, &#39;Job Responsibilities:Design, plan and implementation of enterprise network infrastructure based on Cisco products and solutions.Responsible for design, configuration, and implementation of Cisco routers, switches, firewall and other products such as Riverbed steelhead, F5 and Trend Micro\xa0 products.Provide Pre-sales and Post-sales technical supportStrong troubleshooting skillsResponsible for Problem Solving,\xa0 Service Contract , change\xa0 and\xa0 maintenance managementCreate and maintain documentation as it relates to network configuration, process and service records.Qualifications:Degree\xa0 or Diploma in Electronic Engineering / Computer ScienceExcellent knowledge of TCP/IP protocolCCNP / CCNA certification will be added advantageHOW TO APPLY:Interested applicants, please click on “Apply Now” or email to \xa0to submit your resume.We regret that only shortlisted applicants will be notified.Stafflink Services Pte LtdEA Licence No.: 04C4294EA Personnel: Steven Tan Eng FooEA Personnel Reg. No.: R1873987&#39;, &#39;☑ 5 Working Days, Office Hours☑ Joo Koon☑ Up $8000 Basic + AWS + Variable Bonus☑ Electronics Manufacturer - MNC\xa0Responsibilities:\xa0Oversee overall SAP projects / modules for upgradation, implementation and completionUnderstand and gather information for the company’s requirementsLiaise with internal team and perform first level technical support for SAP system issuesInvolve in reviewing of business requirements for new development and develop test planningProvide recommendations for relevant entities for enhancing for system processingProvide training for end-users on new SAP functions and new business processesResponsible for documentation filling for all the SAP projects planning / business requirements\xa0Requirements:\xa0Min. Degree in Computer Science / Information Technology or equivalentMin. 4-8 years of relevant experience in dealing with SAP system, preferably from electronics manufacturing environmentPossess knowledge in SAP PP, MM, WM, PM systemBilingual in English and Mandarin to liaise with Mandarin speaking associates\xa0Qualified or Interested candidates, please email your updated resume in MS format to: \xa0\xa0\xa0We regret to inform that only shortlisted candidates would be notified.\xa0Lee Wan Fang, CarolSenior Consultant (Reg. No: R1660377)JTE Recruit Pte Ltd (EA License No: 14C7215)&#39;, &#39;Job Description:Desktop support for end userNetwork supportRequirement\xa01 to 3 years of experience in IT industry.Recognized degree or higher in Engineering, Computer Science, or Information Systems or equivalenthands-on experience with Storage/Infrastructure/Network projectsFollowing technology experience;\xa0 \xa0Network : CISCO, Fortigate, HP\xa0 \xa0Security : AV,IDS/IPS\xa0 \xa0Windows 2003, 2008, 2012 Server\xa0 \xa0Windows 7, 8, 10\xa0 \xa0Storage and Server hardware\xa0 \xa0SQL Server skill is advantages\xa0 \xa0Other Microsoft Server Skill are advantages\xa0 \xa0Various cloud solutionStrong documentation skillDemonstrated communication and presentation skillsITIL Fundamental is advantages.Programing Skill and/or application development skill is advantages\xa0Interested parties, please send your resume to  ; \xa0Only shortlisted applicants will be notified by our consultants.\xa0Capita Pte Ltd | EA license no.: 08C2893Tay Su Lynn, May | REG No : R1875900&#39;, &#39;►US MNC, Top industry leader in secure file sharing and enterprise cloud solutions►We are open to candidates with no experience but willing to be trained►Possess strong experience in Python &amp; she will Scripting is highly advantageous for a more senior role►Possess experience with open source load test frameworks like locust►Possess hands on experience in Linux►5 days’ work week with flexible work culture and excellent dynamic working environment►Excellent benefits provided\xa0\xa0\xa0This Performance Engineer position is based in Singapore. This role is required to implement the test strategy for performance benchmarking and application profiling by working closely with the engineering group.\xa0\xa0\xa0\xa0RESPONSIBILITIES:Understand performance problems from the customer perspective and implement performance measurement and profiling strategies based on issues found on deployed systemsCoordinate with the development team to ensure performance guidelines and standards are followedSet up performance tests to be part of the CI (Continuous Integration) to ensure that the product is meeting performance standardsConduct performance acceptance tests that include reliability, stress, load and performance testingWork with other QA engineers to define performance benchmarks and testsREQUIREMENTS:At least 3 years of experience in performance testing is highly advantageousDeep interest in front end profiling and best practices for making websites fasterExperience with open source load test frameworks like locustDatabase skills including query profiling, schema analysis and tuningHands on with Linux, AWS and virtualization platforms like VMwareExpert in Python and she will ScriptingExperience with Jenkins, Jira, Git would be preferredExposure to Agile practices like Scrum, Kanban and TDDBS in Computer Science, Electrical Engineering or related field, or equivalent experience.\xa0OTHER KEY INFORMATION:►Office hour, Monday to Fri 9 to 6pm►Bedok work location\xa0\xa0HOW TO APPLY:Interested applicants, kindly send your resume in MS Word format to \xa0\xa0\xa0\xa0\xa0\xa0Stafflink Services Pte LtdEA Licence No.: 04C4294EA Personnel: Marcus Liu SongboEA Personnel Reg. No.: R1107940\xa0\xa0We regret only shortlisted candidates will be notified.\xa0By submitting any application or resume to us, you will be deemed to have agreed and consented to us collecting, using, retaining and disclosing your personal information to prospective employers for their consideration.&#39;, &#39;Responsibilities:Lead workshops to gather the information needed for fit-gap analysis or blueprints;-Document functional requirements related to Business Planning business processes;-Advise clients on solution directions and the move to the new technologies (S4 HANA)-Development of Prototypes/Proof-of-Concepts;-Customizing of the SAP S4 HANA BP modules;-Coordinate, communicate and assign tasks within the team;-Define and execute tests scenarios;-Training of key-users and or business users;\xa0Qualifications:- Proven experience in SAP HANA BP implementation projects of at least 5 years and 2 full implementations.-A subject matter expert for the business in the area of SAP ERP Business Planning (BPC) and its business processes-Successfully completed a bachelor or master studies in IT or Economics;If you are interested to hear more on this opportunity, send me your CV for a confidential discussion to ¬ogden.com for more information. Please indidate the following as well\xa0Candidate Name :Date of birth :Contact Number :Email ID :Total IT Experience :Relevant Experience :Current/Last Company :Current Location :Last Drawn Monthly Basic :Expected Monthly Basic :Notice Required :Current Visa Status :Work Pass Required :\xa0Reg no. R1328976EA License 13C6321&#39;]
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>2.3 Tokenization</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[146]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#temp_arr = []</span>
+<span class="c1">#pbar = tqdm.tqdm(len(job_adverts))</span>
+<span class="c1">#for ja in job_adverts:</span>
+<span class="c1">#    temp_arr.append(nltk.word_tokenize(ja))</span>
+<span class="c1">#    pbar.update(1)</span>
+<span class="c1">#job_adverts = temp_arr</span>
+<span class="c1">#pbar.close()</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[152]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">len</span><span class="p">(</span><span class="n">job_adverts</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">job_adverts</span><span class="p">[:</span><span class="mi">2</span><span class="p">])</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>[[&#39;Leading&#39;, &#39;Local&#39;, &#39;EnterpriseUnderstand&#39;, &#39;current&#39;, &#39;processes&#39;, &#39;and&#39;, &#39;valuable&#39;, &#39;outcomesAble&#39;, &#39;to&#39;, &#39;structure&#39;, &#39;a&#39;, &#39;large&#39;, &#39;amount&#39;, &#39;of&#39;, &#39;information&#39;, &#39;within&#39;, &#39;a&#39;, &#39;process&#39;, &#39;frameworkJob&#39;, &#39;scopeMapping/Reviewing&#39;, &#39;existing&#39;, &#39;business&#39;, &#39;processes&#39;, &#39;and&#39;, &#39;“&#39;, &#39;re-imagine&#39;, &#39;”&#39;, &#39;improved&#39;, &#39;ones&#39;, &#39;by&#39;, &#39;maximizing&#39;, &#39;customer&#39;, &#39;value&#39;, &#39;while&#39;, &#39;minimizing&#39;, &#39;waste&#39;, &#39;and&#39;, &#39;incorporating&#39;, &#39;automation.Facilitate/lead&#39;, &#39;process&#39;, &#39;workshops&#39;, &#39;that&#39;, &#39;involve&#39;, &#39;eliciting&#39;, &#39;process&#39;, &#39;requirements&#39;, &#39;and&#39;, &#39;liaising&#39;, &#39;with&#39;, &#39;usersAbility&#39;, &#39;to&#39;, &#39;interpret&#39;, &#39;business&#39;, &#39;requirements&#39;, &#39;into&#39;, &#39;digital&#39;, &#39;solution.Create&#39;, &#39;project&#39;, &#39;plans&#39;, &#39;that&#39;, &#39;contain&#39;, &#39;project&#39;, &#39;goals&#39;, &#39;,&#39;, &#39;milestones&#39;, &#39;,&#39;, &#39;and&#39;, &#39;resourcesMonitor&#39;, &#39;,&#39;, &#39;measure&#39;, &#39;and&#39;, &#39;provide&#39;, &#39;feedback&#39;, &#39;on&#39;, &#39;process&#39;, &#39;performanceLiaise&#39;, &#39;with&#39;, &#39;management&#39;, &#39;to&#39;, &#39;coordinate&#39;, &#39;process&#39;, &#39;improvement&#39;, &#39;project&#39;, &#39;activitiesRequirements&#39;, &#39;:&#39;, &#39;Enjoys&#39;, &#39;variety&#39;, &#39;at&#39;, &#39;work&#39;, &#39;as&#39;, &#39;this&#39;, &#39;is&#39;, &#39;a&#39;, &#39;wide-ranging&#39;, &#39;role&#39;, &#39;immersing&#39;, &#39;in&#39;, &#39;a&#39;, &#39;variety&#39;, &#39;of&#39;, &#39;different&#39;, &#39;projects&#39;, &#39;,&#39;, &#39;and&#39;, &#39;able&#39;, &#39;see&#39;, &#39;the&#39;, &#39;big&#39;, &#39;picture.Work&#39;, &#39;with&#39;, &#39;other&#39;, &#39;business&#39;, &#39;teams&#39;, &#39;and&#39;, &#39;Digital&#39;, &#39;Department&#39;, &#39;to&#39;, &#39;figure&#39;, &#39;out&#39;, &#39;the&#39;, &#39;best&#39;, &#39;way&#39;, &#39;to&#39;, &#39;design&#39;, &#39;new&#39;, &#39;processes&#39;, &#39;and&#39;, &#39;solve&#39;, &#39;process-related&#39;, &#39;problems.Strong&#39;, &#39;analytical&#39;, &#39;background&#39;, &#39;,&#39;, &#39;be&#39;, &#39;a&#39;, &#39;problem&#39;, &#39;solver&#39;, &#39;and&#39;, &#39;have&#39;, &#39;good&#39;, &#39;diagramming&#39;, &#39;and&#39;, &#39;communication&#39;, &#39;skillsKnowledge&#39;, &#39;of&#39;, &#39;process&#39;, &#39;mapping&#39;, &#39;and&#39;, &#39;business&#39;, &#39;process&#39;, &#39;reengineering.Performed&#39;, &#39;analysis&#39;, &#39;of&#39;, &#39;business&#39;, &#39;processes&#39;, &#39;and&#39;, &#39;workflows&#39;, &#39;with&#39;, &#39;the&#39;, &#39;objective&#39;, &#39;of&#39;, &#39;finding&#39;, &#39;out&#39;, &#39;how&#39;, &#39;they&#39;, &#39;can&#39;, &#39;be&#39;, &#39;improved&#39;, &#39;or&#39;, &#39;automated.Knowledge&#39;, &#39;in&#39;, &#39;business&#39;, &#39;process&#39;, &#39;modeling&#39;, &#39;notations&#39;, &#39;(&#39;, &#39;BPMN&#39;, &#39;,&#39;, &#39;EPC&#39;, &#39;,&#39;, &#39;etc&#39;, &#39;)&#39;, &#39;and&#39;, &#39;Business&#39;, &#39;Process&#39;, &#39;tools&#39;, &#39;(&#39;, &#39;ARIS&#39;, &#39;)&#39;, &#39;.Interested&#39;, &#39;candidates&#39;, &#39;who&#39;, &#39;wish&#39;, &#39;to&#39;, &#39;apply&#39;, &#39;for&#39;, &#39;the&#39;, &#39;advertised&#39;, &#39;position&#39;, &#39;,&#39;, &#39;please&#39;, &#39;email&#39;, &#39;us&#39;, &#39;at&#39;, &#39;an&#39;, &#39;updated&#39;, &#39;copy&#39;, &#39;of&#39;, &#39;your&#39;, &#39;resume&#39;, &#39;in&#39;, &#39;Ms&#39;, &#39;word&#39;, &#39;format&#39;, &#39;.&#39;, &#39;We&#39;, &#39;regret&#39;, &#39;that&#39;, &#39;only&#39;, &#39;shortlisted&#39;, &#39;candidates&#39;, &#39;will&#39;, &#39;be&#39;, &#39;notified.EA&#39;, &#39;Licence&#39;, &#39;No&#39;, &#39;18C9228&#39;, &#39;Registration&#39;, &#39;No&#39;, &#39;.&#39;, &#39;R1770238&#39;, &#39;(&#39;, &#39;Jimmy&#39;, &#39;Low&#39;, &#39;)&#39;], [&#39;Leading&#39;, &#39;Local&#39;, &#39;EnterpriseStrong&#39;, &#39;knowledge&#39;, &#39;in&#39;, &#39;enterprise&#39;, &#39;IT&#39;, &#39;hardware&#39;, &#39;and&#39;, &#39;softwareMicrosoft&#39;, &#39;Certified&#39;, &#39;Systems&#39;, &#39;Engineer&#39;, &#39;(&#39;, &#39;MCSE&#39;, &#39;)&#39;, &#39;,&#39;, &#39;ITIL&#39;, &#39;V3&#39;, &#39;will&#39;, &#39;advantageResponsibilitiesProvide&#39;, &#39;IT&#39;, &#39;support&#39;, &#39;to&#39;, &#39;end&#39;, &#39;user&#39;, &#39;included&#39;, &#39;enterprises&#39;, &#39;hardware&#39;, &#39;and&#39;, &#39;softwareProvide&#39;, &#39;IT&#39;, &#39;administration&#39;, &#39;&amp;&#39;, &#39;service&#39;, &#39;desk&#39;, &#39;support&#39;, &#39;for&#39;, &#39;internal&#39;, &#39;customer.Provide&#39;, &#39;solution&#39;, &#39;to&#39;, &#39;end&#39;, &#39;user&#39;, &#39;requests&#39;, &#39;/&#39;, &#39;problems&#39;, &#39;via&#39;, &#39;multiple&#39;, &#39;channel&#39;, &#39;(&#39;, &#39;phone&#39;, &#39;,&#39;, &#39;email&#39;, &#39;,&#39;, &#39;remote&#39;, &#39;service&#39;, &#39;,&#39;, &#39;IT&#39;, &#39;Service&#39;, &#39;Management&#39;, &#39;System&#39;, &#39;etc&#39;, &#39;.&#39;, &#39;)&#39;, &#39;Supporting&#39;, &#39;teleconference&#39;, &#39;,&#39;, &#39;audio/visual&#39;, &#39;infrastructure&#39;, &#39;and&#39;, &#39;services.Participate&#39;, &#39;in&#39;, &#39;projects&#39;, &#39;when&#39;, &#39;required.RequirementExcellent&#39;, &#39;technical&#39;, &#39;knowledge&#39;, &#39;and&#39;, &#39;skills&#39;, &#39;of&#39;, &#39;Windows&#39;, &#39;OS.Deep&#39;, &#39;understanding&#39;, &#39;of&#39;, &#39;IT&#39;, &#39;hardware&#39;, &#39;and&#39;, &#39;software&#39;, &#39;(&#39;, &#39;Microsoft&#39;, &#39;Office&#39;, &#39;Suite&#39;, &#39;,&#39;, &#39;Visio&#39;, &#39;,&#39;, &#39;etc&#39;, &#39;.&#39;, &#39;)&#39;, &#39;Experience&#39;, &#39;administering&#39;, &#39;Active&#39;, &#39;Directory&#39;, &#39;domain&#39;, &#39;,&#39;, &#39;Group&#39;, &#39;Policy&#39;, &#39;,&#39;, &#39;Microsoft&#39;, &#39;Office&#39;, &#39;365.Knowledge&#39;, &#39;in&#39;, &#39;enterprise&#39;, &#39;software&#39;, &#39;installation&#39;, &#39;,&#39;, &#39;networking&#39;, &#39;system&#39;, &#39;troubleshooting&#39;, &#39;,&#39;, &#39;security&#39;, &#39;patching&#39;, &#39;,&#39;, &#39;etc.Experienced&#39;, &#39;in&#39;, &#39;support&#39;, &#39;the&#39;, &#39;following&#39;, &#39;application&#39;, &#39;is&#39;, &#39;a&#39;, &#39;plusMobile&#39;, &#39;Device&#39;, &#39;ManagementMicrosoft&#39;, &#39;System&#39;, &#39;Centre&#39;, &#39;Configuration&#39;, &#39;ManagerMicrosoft&#39;, &#39;Lync/SkypeMicrosoft&#39;, &#39;BitLockerMicrosoft&#39;, &#39;Certified&#39;, &#39;Systems&#39;, &#39;Engineer&#39;, &#39;(&#39;, &#39;MCSE&#39;, &#39;)&#39;, &#39;,&#39;, &#39;ITIL&#39;, &#39;V3&#39;, &#39;will&#39;, &#39;be&#39;, &#39;a&#39;, &#39;plusInterested&#39;, &#39;candidates&#39;, &#39;who&#39;, &#39;wish&#39;, &#39;to&#39;, &#39;apply&#39;, &#39;for&#39;, &#39;the&#39;, &#39;advertised&#39;, &#39;position&#39;, &#39;,&#39;, &#39;please&#39;, &#39;email&#39;, &#39;us&#39;, &#39;at&#39;, &#39;an&#39;, &#39;updated&#39;, &#39;copy&#39;, &#39;of&#39;, &#39;your&#39;, &#39;resume&#39;, &#39;in&#39;, &#39;Ms&#39;, &#39;word&#39;, &#39;format&#39;, &#39;.&#39;, &#39;We&#39;, &#39;regret&#39;, &#39;that&#39;, &#39;only&#39;, &#39;shortlisted&#39;, &#39;candidates&#39;, &#39;will&#39;, &#39;be&#39;, &#39;notified&#39;, &#39;.&#39;, &#39;EA&#39;, &#39;Licence&#39;, &#39;No&#39;, &#39;18C9228&#39;, &#39;Registration&#39;, &#39;No&#39;, &#39;.&#39;, &#39;R1770238&#39;, &#39;(&#39;, &#39;Jimmy&#39;, &#39;Low&#39;, &#39;)&#39;]]
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>2.4 Normalization ((1) stemming, (2) lemmatization, and (3) everything else)</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[153]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">remove_non_ascii</span><span class="p">(</span><span class="n">words</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Remove non-ASCII characters from list of tokenized words&quot;&quot;&quot;</span>
+    <span class="n">new_words</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">words</span><span class="p">:</span>
+        <span class="n">new_word</span> <span class="o">=</span> <span class="n">unicodedata</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="s1">&#39;NFKD&#39;</span><span class="p">,</span> <span class="n">word</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;ascii&#39;</span><span class="p">,</span> <span class="s1">&#39;ignore&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">,</span> <span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
+        <span class="n">new_words</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_word</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">new_words</span>
+
+<span class="k">def</span> <span class="nf">to_lowercase</span><span class="p">(</span><span class="n">words</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Convert all characters to lowercase from list of tokenized words&quot;&quot;&quot;</span>
+    <span class="n">new_words</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">words</span><span class="p">:</span>
+        <span class="n">new_word</span> <span class="o">=</span> <span class="n">word</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="n">new_words</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_word</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">new_words</span>
+
+<span class="k">def</span> <span class="nf">remove_punctuation</span><span class="p">(</span><span class="n">words</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Remove punctuation from list of tokenized words&quot;&quot;&quot;</span>
+    <span class="n">new_words</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">words</span><span class="p">:</span>
+        <span class="n">new_word</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;[^\w\s]&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">word</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">new_word</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+            <span class="n">new_words</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_word</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">new_words</span>
+
+<span class="k">def</span> <span class="nf">replace_numbers</span><span class="p">(</span><span class="n">words</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Replace all interger occurrences in list of tokenized words with textual representation&quot;&quot;&quot;</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">inflect</span><span class="o">.</span><span class="n">engine</span><span class="p">()</span>
+    <span class="n">new_words</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">words</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">word</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
+            <span class="n">new_word</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">number_to_words</span><span class="p">(</span><span class="n">word</span><span class="p">)</span>
+            <span class="n">new_words</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_word</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">new_words</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">word</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">new_words</span>
+
+<span class="k">def</span> <span class="nf">remove_stopwords</span><span class="p">(</span><span class="n">words</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Remove stop words from list of tokenized words&quot;&quot;&quot;</span>
+    <span class="n">new_words</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">words</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">word</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">stopwords</span><span class="o">.</span><span class="n">words</span><span class="p">(</span><span class="s1">&#39;english&#39;</span><span class="p">):</span>
+            <span class="n">new_words</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">word</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">new_words</span>
+
+<span class="k">def</span> <span class="nf">stem_words</span><span class="p">(</span><span class="n">words</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Stem words in list of tokenized words&quot;&quot;&quot;</span>
+    <span class="n">stemmer</span> <span class="o">=</span> <span class="n">LancasterStemmer</span><span class="p">()</span>
+    <span class="n">stems</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">words</span><span class="p">:</span>
+        <span class="n">stem</span> <span class="o">=</span> <span class="n">stemmer</span><span class="o">.</span><span class="n">stem</span><span class="p">(</span><span class="n">word</span><span class="p">)</span>
+        <span class="n">stems</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stem</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">stems</span>
+
+<span class="k">def</span> <span class="nf">lemmatize_verbs</span><span class="p">(</span><span class="n">words</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Lemmatize verbs in list of tokenized words&quot;&quot;&quot;</span>
+    <span class="n">lemmatizer</span> <span class="o">=</span> <span class="n">WordNetLemmatizer</span><span class="p">()</span>
+    <span class="n">lemmas</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">words</span><span class="p">:</span>
+        <span class="n">lemma</span> <span class="o">=</span> <span class="n">lemmatizer</span><span class="o">.</span><span class="n">lemmatize</span><span class="p">(</span><span class="n">word</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="s1">&#39;v&#39;</span><span class="p">)</span>
+        <span class="n">lemmas</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lemma</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">lemmas</span>
+
+<span class="k">def</span> <span class="nf">normalize</span><span class="p">(</span><span class="n">words</span><span class="p">):</span>
+    <span class="n">pbar</span> <span class="o">=</span> <span class="n">tqdm</span><span class="o">.</span><span class="n">tqdm</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">words</span><span class="p">))</span>
+    <span class="n">word_arr</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">words</span><span class="p">:</span>
+        <span class="n">word</span> <span class="o">=</span> <span class="n">remove_non_ascii</span><span class="p">(</span><span class="n">word</span><span class="p">)</span>
+        <span class="n">word</span> <span class="o">=</span> <span class="n">to_lowercase</span><span class="p">(</span><span class="n">word</span><span class="p">)</span>
+        <span class="n">word</span> <span class="o">=</span> <span class="n">remove_punctuation</span><span class="p">(</span><span class="n">word</span><span class="p">)</span>
+        <span class="n">word</span> <span class="o">=</span> <span class="n">replace_numbers</span><span class="p">(</span><span class="n">word</span><span class="p">)</span>
+        <span class="n">word</span> <span class="o">=</span> <span class="n">remove_stopwords</span><span class="p">(</span><span class="n">word</span><span class="p">)</span>
+        <span class="n">word_arr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">word</span><span class="p">)</span>
+        <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">pbar</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">word_arr</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[154]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">job_adverts</span> <span class="o">=</span> <span class="n">normalize</span><span class="p">(</span><span class="n">job_adverts</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[158]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">len</span><span class="p">(</span><span class="n">job_adverts</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">job_adverts</span><span class="p">[:</span><span class="mi">1</span><span class="p">])</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>[[&#39;leading&#39;, &#39;local&#39;, &#39;enterpriseunderstand&#39;, &#39;current&#39;, &#39;processes&#39;, &#39;valuable&#39;, &#39;outcomesable&#39;, &#39;structure&#39;, &#39;large&#39;, &#39;amount&#39;, &#39;information&#39;, &#39;within&#39;, &#39;process&#39;, &#39;frameworkjob&#39;, &#39;scopemappingreviewing&#39;, &#39;existing&#39;, &#39;business&#39;, &#39;processes&#39;, &#39;reimagine&#39;, &#39;improved&#39;, &#39;ones&#39;, &#39;maximizing&#39;, &#39;customer&#39;, &#39;value&#39;, &#39;minimizing&#39;, &#39;waste&#39;, &#39;incorporating&#39;, &#39;automationfacilitatelead&#39;, &#39;process&#39;, &#39;workshops&#39;, &#39;involve&#39;, &#39;eliciting&#39;, &#39;process&#39;, &#39;requirements&#39;, &#39;liaising&#39;, &#39;usersability&#39;, &#39;interpret&#39;, &#39;business&#39;, &#39;requirements&#39;, &#39;digital&#39;, &#39;solutioncreate&#39;, &#39;project&#39;, &#39;plans&#39;, &#39;contain&#39;, &#39;project&#39;, &#39;goals&#39;, &#39;milestones&#39;, &#39;resourcesmonitor&#39;, &#39;measure&#39;, &#39;provide&#39;, &#39;feedback&#39;, &#39;process&#39;, &#39;performanceliaise&#39;, &#39;management&#39;, &#39;coordinate&#39;, &#39;process&#39;, &#39;improvement&#39;, &#39;project&#39;, &#39;activitiesrequirements&#39;, &#39;enjoys&#39;, &#39;variety&#39;, &#39;work&#39;, &#39;wideranging&#39;, &#39;role&#39;, &#39;immersing&#39;, &#39;variety&#39;, &#39;different&#39;, &#39;projects&#39;, &#39;able&#39;, &#39;see&#39;, &#39;big&#39;, &#39;picturework&#39;, &#39;business&#39;, &#39;teams&#39;, &#39;digital&#39;, &#39;department&#39;, &#39;figure&#39;, &#39;best&#39;, &#39;way&#39;, &#39;design&#39;, &#39;new&#39;, &#39;processes&#39;, &#39;solve&#39;, &#39;processrelated&#39;, &#39;problemsstrong&#39;, &#39;analytical&#39;, &#39;background&#39;, &#39;problem&#39;, &#39;solver&#39;, &#39;good&#39;, &#39;diagramming&#39;, &#39;communication&#39;, &#39;skillsknowledge&#39;, &#39;process&#39;, &#39;mapping&#39;, &#39;business&#39;, &#39;process&#39;, &#39;reengineeringperformed&#39;, &#39;analysis&#39;, &#39;business&#39;, &#39;processes&#39;, &#39;workflows&#39;, &#39;objective&#39;, &#39;finding&#39;, &#39;improved&#39;, &#39;automatedknowledge&#39;, &#39;business&#39;, &#39;process&#39;, &#39;modeling&#39;, &#39;notations&#39;, &#39;bpmn&#39;, &#39;epc&#39;, &#39;etc&#39;, &#39;business&#39;, &#39;process&#39;, &#39;tools&#39;, &#39;aris&#39;, &#39;interested&#39;, &#39;candidates&#39;, &#39;wish&#39;, &#39;apply&#39;, &#39;advertised&#39;, &#39;position&#39;, &#39;please&#39;, &#39;email&#39;, &#39;us&#39;, &#39;updated&#39;, &#39;copy&#39;, &#39;resume&#39;, &#39;ms&#39;, &#39;word&#39;, &#39;format&#39;, &#39;regret&#39;, &#39;shortlisted&#39;, &#39;candidates&#39;, &#39;notifiedea&#39;, &#39;licence&#39;, &#39;18c9228&#39;, &#39;registration&#39;, &#39;r1770238&#39;, &#39;jimmy&#39;, &#39;low&#39;]]
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><font size="30">3.0 Data Clustering</font></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[165]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.feature_extraction.text</span> <span class="k">import</span> <span class="n">TfidfVectorizer</span>
+
+<span class="k">def</span> <span class="nf">identity_tokenizer</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">text</span>
+
+<span class="n">vectorizer</span> <span class="o">=</span> <span class="n">TfidfVectorizer</span><span class="p">(</span><span class="n">tokenizer</span><span class="o">=</span><span class="n">identity_tokenizer</span><span class="p">,</span> <span class="n">stop_words</span><span class="o">=</span><span class="s1">&#39;english&#39;</span><span class="p">,</span> <span class="n">lowercase</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  
+<span class="n">x</span> <span class="o">=</span> <span class="n">vectorizer</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">job_adverts</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;shape : &quot;</span><span class="p">,</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
 </pre></div>
 
 </div>
@@ -15119,15 +15580,15 @@ div#notebook {
 <div class="output_subarea output_text output_error">
 <pre>
 <span class="ansi-red-intense-fg ansi-bold">---------------------------------------------------------------------------</span>
-<span class="ansi-red-intense-fg ansi-bold">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-green-intense-fg ansi-bold">&lt;ipython-input-1-28f88f0ab46b&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span><span class="ansi-blue-intense-fg ansi-bold">()</span>
-<span class="ansi-green-fg">      1</span> <span class="ansi-green-intense-fg ansi-bold">from</span> sklearn<span class="ansi-yellow-intense-fg ansi-bold">.</span>feature_extraction<span class="ansi-yellow-intense-fg ansi-bold">.</span>text <span class="ansi-green-intense-fg ansi-bold">import</span> CountVectorizer<span class="ansi-yellow-intense-fg ansi-bold">,</span> TfidfTransformer
-<span class="ansi-green-fg">      2</span> <span class="ansi-red-intense-fg ansi-bold"># our corpus</span>
-<span class="ansi-green-intense-fg ansi-bold">----&gt; 3</span><span class="ansi-yellow-intense-fg ansi-bold"> </span>data <span class="ansi-yellow-intense-fg ansi-bold">=</span> split_text_data
-<span class="ansi-green-fg">      4</span> 
-<span class="ansi-green-fg">      5</span> cv <span class="ansi-yellow-intense-fg ansi-bold">=</span> CountVectorizer<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">)</span>
+<span class="ansi-red-intense-fg ansi-bold">TypeError</span>                                 Traceback (most recent call last)
+<span class="ansi-green-intense-fg ansi-bold">&lt;ipython-input-165-866d363c4707&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span><span class="ansi-blue-intense-fg ansi-bold">()</span>
+<span class="ansi-green-fg">      4</span>     <span class="ansi-green-intense-fg ansi-bold">return</span> text
+<span class="ansi-green-fg">      5</span> 
+<span class="ansi-green-intense-fg ansi-bold">----&gt; 6</span><span class="ansi-yellow-intense-fg ansi-bold"> </span>vectorizer <span class="ansi-yellow-intense-fg ansi-bold">=</span> TfidfVectorizer<span class="ansi-yellow-intense-fg ansi-bold">(</span>tokenizer<span class="ansi-yellow-intense-fg ansi-bold">=</span>identity_tokenizer<span class="ansi-yellow-intense-fg ansi-bold">,</span> stop_words<span class="ansi-yellow-intense-fg ansi-bold">=</span><span class="ansi-blue-intense-fg ansi-bold">&#39;english&#39;</span><span class="ansi-yellow-intense-fg ansi-bold">,</span> lowercase<span class="ansi-yellow-intense-fg ansi-bold">=</span><span class="ansi-green-intense-fg ansi-bold">False</span><span class="ansi-yellow-intense-fg ansi-bold">,</span>verbose<span class="ansi-yellow-intense-fg ansi-bold">=</span><span class="ansi-green-intense-fg ansi-bold">True</span><span class="ansi-yellow-intense-fg ansi-bold">)</span>
+<span class="ansi-green-fg">      7</span> x <span class="ansi-yellow-intense-fg ansi-bold">=</span> vectorizer<span class="ansi-yellow-intense-fg ansi-bold">.</span>fit_transform<span class="ansi-yellow-intense-fg ansi-bold">(</span>job_adverts<span class="ansi-yellow-intense-fg ansi-bold">)</span>
+<span class="ansi-green-fg">      8</span> print<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-blue-intense-fg ansi-bold">&#34;shape : &#34;</span><span class="ansi-yellow-intense-fg ansi-bold">,</span>x<span class="ansi-yellow-intense-fg ansi-bold">.</span>shape<span class="ansi-yellow-intense-fg ansi-bold">)</span>
 
-<span class="ansi-red-intense-fg ansi-bold">NameError</span>: name &#39;split_text_data&#39; is not defined</pre>
+<span class="ansi-red-intense-fg ansi-bold">TypeError</span>: __init__() got an unexpected keyword argument &#39;verbose&#39;</pre>
 </div>
 </div>
 
@@ -15137,11 +15598,14 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[8]:</div>
+<div class="prompt input_prompt">In&nbsp;[164]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
-<span class="n">d</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">today</span><span class="p">()</span> <span class="o">-</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="n">days_to_subtract</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.cluster</span> <span class="k">import</span> <span class="n">KMeans</span>
+
+<span class="n">true_k</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">KMeans</span><span class="p">(</span><span class="n">n_clusters</span><span class="o">=</span><span class="n">true_k</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="s1">&#39;k-means++&#39;</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">n_init</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 </pre></div>
 
 </div>
@@ -15157,15 +15621,240 @@ div#notebook {
 <div class="prompt"></div>
 
 
-<div class="output_subarea output_text output_error">
-<pre>
-<span class="ansi-red-intense-fg ansi-bold">---------------------------------------------------------------------------</span>
-<span class="ansi-red-intense-fg ansi-bold">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-green-intense-fg ansi-bold">&lt;ipython-input-8-76bc6010ba34&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span><span class="ansi-blue-intense-fg ansi-bold">()</span>
-<span class="ansi-green-fg">      1</span> <span class="ansi-green-intense-fg ansi-bold">from</span> datetime <span class="ansi-green-intense-fg ansi-bold">import</span> datetime<span class="ansi-yellow-intense-fg ansi-bold">,</span> timedelta
-<span class="ansi-green-intense-fg ansi-bold">----&gt; 2</span><span class="ansi-yellow-intense-fg ansi-bold"> </span>d <span class="ansi-yellow-intense-fg ansi-bold">=</span> datetime<span class="ansi-yellow-intense-fg ansi-bold">.</span>today<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">)</span> <span class="ansi-yellow-intense-fg ansi-bold">-</span> timedelta<span class="ansi-yellow-intense-fg ansi-bold">(</span>days<span class="ansi-yellow-intense-fg ansi-bold">=</span>days_to_subtract<span class="ansi-yellow-intense-fg ansi-bold">)</span>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Initialization complete
+Iteration  0, inertia 8276.943
+Iteration  1, inertia 4441.220
+Iteration  2, inertia 4421.228
+Iteration  3, inertia 4414.083
+Iteration  4, inertia 4409.464
+Iteration  5, inertia 4406.367
+Iteration  6, inertia 4403.508
+Iteration  7, inertia 4401.445
+Iteration  8, inertia 4399.873
+Iteration  9, inertia 4399.028
+Iteration 10, inertia 4398.562
+Iteration 11, inertia 4398.286
+Iteration 12, inertia 4398.109
+Iteration 13, inertia 4397.994
+Iteration 14, inertia 4397.933
+Iteration 15, inertia 4397.849
+Iteration 16, inertia 4397.692
+Iteration 17, inertia 4397.663
+Iteration 18, inertia 4397.661
+Converged at iteration 18: center shift 0.000000e+00 within tolerance 2.269238e-09
+</pre>
+</div>
+</div>
 
-<span class="ansi-red-intense-fg ansi-bold">NameError</span>: name &#39;days_to_subtract&#39; is not defined</pre>
+<div class="output_area">
+
+<div class="prompt output_prompt">Out[164]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>KMeans(algorithm=&#39;auto&#39;, copy_x=True, init=&#39;k-means++&#39;, max_iter=100,
+    n_clusters=10, n_init=1, n_jobs=1, precompute_distances=&#39;auto&#39;,
+    random_state=None, tol=0.0001, verbose=True)</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[169]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">order_centroids</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">cluster_centers_</span><span class="o">.</span><span class="n">argsort</span><span class="p">()[:,</span> <span class="p">::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">terms</span> <span class="o">=</span> <span class="n">vectorizer</span><span class="o">.</span><span class="n">get_feature_names</span><span class="p">()</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">true_k</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Cluster </span><span class="si">%d</span><span class="s1">:&#39;</span> <span class="o">%</span> <span class="n">i</span><span class="p">),</span>
+    <span class="k">for</span> <span class="n">ind</span> <span class="ow">in</span> <span class="n">order_centroids</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:</span><span class="mi">15</span><span class="p">]:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39; </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">terms</span><span class="p">[</span><span class="n">ind</span><span class="p">])</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Cluster 0:
+ marketing
+ media
+ content
+ mindvalley
+ social
+ digital
+ campaigns
+ brand
+ creative
+ product
+ work
+ experience
+ online
+ video
+ team
+Cluster 1:
+ data
+ analytics
+ business
+ experience
+ big
+ team
+ machine
+ learning
+ etl
+ management
+ skills
+ intelligence
+ architecture
+ hadoop
+ models
+Cluster 2:
+ experience
+ work
+ software
+ team
+ skills
+ business
+ years
+ support
+ knowledge
+ working
+ development
+ design
+ job
+ management
+ technical
+Cluster 3:
+ project
+ test
+ business
+ sap
+ management
+ experience
+ requirements
+ testing
+ team
+ development
+ work
+ projects
+ ensure
+ skills
+ technical
+Cluster 4:
+ experience
+ development
+ design
+ web
+ java
+ software
+ spring
+ applications
+ knowledge
+ mobile
+ code
+ team
+ working
+ using
+ test
+Cluster 5:
+ security
+ cyber
+ soc
+ job
+ information
+ penetration
+ advertisement
+ threat
+ incident
+ cybersecurity
+ assessment
+ client
+ vulnerability
+ services
+ compliance
+Cluster 6:
+ development
+ net
+ software
+ experience
+ c
+ design
+ programming
+ sql
+ application
+ web
+ database
+ skills
+ knowledge
+ requirements
+ good
+Cluster 7:
+ sales
+ business
+ customer
+ customers
+ product
+ account
+ experience
+ team
+ solutions
+ management
+ services
+ ability
+ work
+ skills
+ new
+Cluster 8:
+ infotech
+ pleased
+ openings
+ greetings
+ inform
+ regarding
+ infotechposition
+ singaporecompany
+ monthjd
+ based
+ yearslocation
+ client
+ payrolls
+ renewable
+ singaporeemployer
+Cluster 9:
+ support
+ network
+ hardware
+ infrastructure
+ service
+ systems
+ server
+ experience
+ windows
+ security
+ provide
+ management
+ technical
+ software
+ troubleshooting
+</pre>
 </div>
 </div>
 
